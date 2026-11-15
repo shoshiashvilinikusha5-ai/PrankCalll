@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ka">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10111b">
+  <title>PrankCall — მეგობრული ხუმრობა</title>
+  <style>
+    :root{color-scheme:dark;--bg:#10111b;--panel:#1b1d2b;--muted:#a9acc0;--text:#f7f7fb;--accent:#8b7bff;--pink:#ff77a8;--line:#33364b}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -20%,#393064 0,transparent 55%),var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
+    main{width:min(100%,520px)}.brand{text-align:center;margin-bottom:24px}.icon{font-size:42px}.brand h1{margin:4px 0;font-size:30px}.brand p,.hint{color:var(--muted);margin:0}.card{background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 24px 80px #0005}
+    label{display:block;font-weight:650;margin:16px 0 7px}input,textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:#11131e;color:var(--text);font:inherit;padding:13px 14px;outline:none}input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #8b7bff30}textarea{min-height:122px;resize:vertical} .hint{font-size:13px;margin-top:6px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}button,.button{border:0;border-radius:12px;padding:13px 15px;font:inherit;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px}.primary{background:linear-gradient(120deg,var(--accent),var(--pink));color:white}.secondary{background:#292b3d;color:var(--text);border:1px solid var(--line)}button:hover,.button:hover{filter:brightness(1.12)}button:focus-visible,.button:focus-visible{outline:3px solid #fff;outline-offset:2px}.notice{font-size:13px;color:var(--muted);border-top:1px solid var(--line);margin-top:20px;padding-top:16px}.notice strong{color:#ffd38b}.status{min-height:24px;color:#c5bbff;font-size:14px;margin-top:10px}
+    @media(max-width:440px){.card{padding:18px}.actions{grid-template-columns:1fr}.brand h1{font-size:26px}}
+  </style>
+</head>
+<body>
+  <main>
+    <header class="brand"><div class="icon" aria-hidden="true">☎️</div><h1>PrankCall</h1><p>მეგობრული ხუმრობა — მხოლოდ თანხმობით</p></header>
+    <section class="card" aria-label="ზარისა და შეტყობინების მომზადება">
+      <label for="phone">ტელეფონის ნომერი</label>
+      <input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="მაგ. +995 5XX XX XX XX" aria-describedby="phone-hint">
+      <p class="hint" id="phone-hint">შეიყვანე ქვეყნის კოდით. ნომერი შენს მოწყობილობაზე მუშავდება.</p>
+      <label for="message">შეტყობინების ტექსტი</label>
+      <textarea id="message" maxlength="500" placeholder="დაწერე მეგობრული, უწყინარი შეტყობინება…" aria-describedby="message-count"></textarea>
+      <p class="hint" id="message-count">0 / 500</p>
+      <div class="actions">
+        <a class="button primary" id="call" href="#" aria-label="ტელეფონის აპის გახსნა">📞 დარეკვა</a>
+        <a class="button secondary" id="sms" href="#" aria-label="Messages აპის გახსნა">💬 Messages-ის გახსნა</a>
+        <button class="secondary" id="copy" type="button">ტექსტის კოპირება</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <aside class="notice"><strong>გთხოვ, ითამაშე უსაფრთხოდ.</strong> დარეკე ან მისწერე მხოლოდ ადამიანს, ვისთანაც ასეთი ხუმრობა მისაღებია. ღილაკი ხსნის ტელეფონის ან Messages-ის აპს — ზარს და შეტყობინებას თავად გადაამოწმებ და თავად გააგზავნი. აპი ნომერს არ აყალბებს და შეტყობინებებს არ აგზავნის.</aside>
+    </section>
+  </main>
+  <script>
+    const phone = document.querySelector('#phone');
+    const message = document.querySelector('#message');
+    const call = document.querySelector('#call');
+    const sms = document.querySelector('#sms');
+    const status = document.querySelector('#status');
+    const digits = value => value.replace(/[^\d+]/g, '').replace(/(?!^)\+/g, '');
+    function updateLinks(){
+      const number = digits(phone.value);
+      call.href = number ? `tel:${number}` : '#';
+      const body = message.value.trim();
+      sms.href = number ? `sms:${number}${body ? `?body=${encodeURIComponent(body)}` : ''}` : '#';
+      document.querySelector('#message-count').textContent = `${message.value.length} / 500`;
+    }
+    phone.addEventListener('input', updateLinks);
+    message.addEventListener('input', updateLinks);
+    for (const link of [call,sms]) link.addEventListener('click', event => {
+      if (!digits(phone.value)) { event.preventDefault(); status.textContent = 'ჯერ შეიყვანე ტელეფონის ნომერი.'; phone.focus(); }
+      else status.textContent = link === call ? 'გადაამჟღავნე ნომერი და дӱარე მხოლოდ თანხმობით.' : 'შეამოწმე ტექსტი Messages-ში გაგზავნამდე.';
+    });
+    document.querySelector('#copy').addEventListener('click', async () => {
+      if (!message.value) { status.textContent = 'ჯერ შეიყვანე ტექსტი დასაკოპირებლად.'; message.focus(); return; }
+      try { await navigator.clipboard.writeText(message.value); status.textContent = 'ტექსტი დაკოპირდა.'; }
+      catch { message.select(); status.textContent = 'მონიშნე ტექსტი და დააკოპირე ხელით.'; }
+    });
+    updateLinks();
+  </script>
+</body>
+</html>
